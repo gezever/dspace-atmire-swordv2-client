@@ -36,7 +36,7 @@ public class LNETests
         this.user = properties.getProperty("user");
         this.pass = properties.getProperty("pass");
         this.obo = properties.getProperty("obo");
-        this.file = properties.getProperty("file");
+        this.file = properties.getProperty("lne-file");
 		this.fileMd5 = DigestUtils.md5Hex(new FileInputStream(this.file));
         this.file2 = properties.getProperty("file2");
 	}
