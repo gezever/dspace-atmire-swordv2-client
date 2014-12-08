@@ -8,6 +8,7 @@ import org.swordapp.client.*;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -22,6 +23,7 @@ public class LNETests
 	private String file = null;
 	private String fileMd5 = null;
     private String file2 = null;
+	private String collection = null;
 
     private String LNE = "http://archivering.milieuverslag.schemas.milieuinfo.be";
 
@@ -39,6 +41,7 @@ public class LNETests
         this.file = properties.getProperty("lne-file");
 		this.fileMd5 = DigestUtils.md5Hex(new FileInputStream(this.file));
         this.file2 = properties.getProperty("file2");
+		this.collection = properties.getProperty("collection");
 	}
 
     @Test
@@ -47,7 +50,8 @@ public class LNETests
 	{
 		SWORDClient client = new SWORDClient(new ClientConfiguration());
 		ServiceDocument sd = client.getServiceDocument(this.sdIRI, new AuthCredentials(this.user, this.pass));
-		SWORDCollection col = sd.getWorkspaces().get(0).getCollections().get(0);
+		List<SWORDWorkspace> workspaces = sd.getWorkspaces();
+		SWORDCollection col = workspaces.get(0).getCollection(collection);
 
 		Deposit deposit = new Deposit();
 		deposit.setFile(new FileInputStream(this.file));
