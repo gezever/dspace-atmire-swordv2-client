@@ -8,6 +8,7 @@ import org.swordapp.client.*;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -48,6 +49,8 @@ public class LNETests
 	public void depositNew()
 			throws Exception
 	{
+//        for (int i = 0; i < 10; i++) {
+        Date start = new Date();
 		SWORDClient client = new SWORDClient(new ClientConfiguration());
 		ServiceDocument sd = client.getServiceDocument(this.sdIRI, new AuthCredentials(this.user, this.pass));
 		List<SWORDWorkspace> workspaces = sd.getWorkspaces();
@@ -63,7 +66,10 @@ public class LNETests
 		DepositReceipt receipt = client.deposit(col, deposit, new AuthCredentials(this.user, this.pass));
 		assertEquals(receipt.getStatusCode(), 201);
 		assertTrue(receipt.getLocation() != null);
-	}
+        Date end = new Date();
+        System.out.println("Processing time " + (end.getTime() - start.getTime()));
+//        }
+    }
 
 //    @Test
 //	public void update()
