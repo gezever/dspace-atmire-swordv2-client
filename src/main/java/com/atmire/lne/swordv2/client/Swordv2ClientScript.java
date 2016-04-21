@@ -174,6 +174,7 @@ public class Swordv2ClientScript {
             stringBuilder.append(StringUtils.join(ListUtils.emptyIfNull(swordCollection.getAcceptPackaging()).iterator(), ", "));
             stringBuilder.append(")\n");
             log.info(stringBuilder.toString());
+            i++;
         }
 
         log.info("Please enter the number of the collection to use for the deposit: ");
