@@ -39,6 +39,7 @@ public class UriRegistry
     // Package Formats
     public static String PACKAGE_SIMPLE_ZIP = "http://purl.org/net/sword/package/SimpleZip";
     public static String PACKAGE_BINARY = "http://purl.org/net/sword/package/Binary";
+    public static String PACKAGE_DSPACE_SAF = "http://purl.org/net/sword/package/SAFDSpaceSIP";
 
     // errors
     public static String ERROR_CONTENT = ERROR_NAMESPACE + "ErrorContent";

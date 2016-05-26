@@ -9,6 +9,7 @@ import org.swordapp.client.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,6 +26,7 @@ public class Swordv2ClientScript {
     private static Log log = LogFactory.getLog(Swordv2ClientScript.class);
 
     private static final String FILE_PATH_FLAG = "f";
+    private static final String DIRECTORY_PATH_FLAG = "d";
     private static final String PROPERTIES_PATH_FLAG = "p";
     private static final String MIMETYPE_FLAG = "m";
     private static final String SLUG_FLAG = "s";
@@ -41,41 +43,90 @@ public class Swordv2ClientScript {
 
         if(cmd != null) {
             String filePath = cmd.getOptionValue(FILE_PATH_FLAG);
+            String directoryPath = cmd.getOptionValue(DIRECTORY_PATH_FLAG);
             String mimeType = cmd.getOptionValue(MIMETYPE_FLAG);
             String suggestedIdentifier = cmd.getOptionValue(SLUG_FLAG);
             boolean inProgress = cmd.hasOption(IN_PROGRESS_FLAG);
             String propertiesPath = cmd.getOptionValue(PROPERTIES_PATH_FLAG);
 
-            result = doSwordDeposit(Paths.get(filePath), mimeType, suggestedIdentifier, inProgress, Paths.get(propertiesPath));
+            try {
+                loadSwordv2ServerProperties(Paths.get(propertiesPath));
+
+                SWORDCollection targetCollection = getTargetCollection();
+
+                //Upload all zips in a directory
+                if (StringUtils.isNotEmpty(directoryPath)) {
+                    int fails = 0;
+                    int imported = 0;
+
+                    try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(directoryPath))) {
+                        for (Path path : stream) {
+                            if(path.getFileName().toString().endsWith(".zip") || path.getFileName().toString().endsWith(".ZIP")) {
+                                log.info("Uploading file " + path.toAbsolutePath().toString());
+
+                                try {
+                                    result = doSwordDeposit(path, mimeType, suggestedIdentifier, inProgress, targetCollection);
+                                    imported++;
+                                } catch(Exception e) {
+                                    log.error("There is a problem with file " + path.toString() + ": " + e.getMessage());
+                                    fails++;
+                                }
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    log.info("Successfully imported " + imported + " files and encountered " + fails + " failures");
+
+                //Upload a single zip
+                } else if (StringUtils.isNotEmpty(filePath)) {
+                    result = doSwordDeposit(Paths.get(filePath), mimeType, suggestedIdentifier, inProgress, targetCollection);
+
+                //We don't know what to do
+                } else {
+                    log.error("You have to specify at least a file or a directory");
+                }
+
+            } catch (SWORDClientException e) {
+                log.error("Unable to connect to SWORD server", e);
+            } catch (IOException e) {
+                log.error("Unable to open archive file or swordv2-server.properties file", e);
+            } catch (SWORDError e) {
+                log.error("SWORD server was unable to process the request, received response code " + e.getStatus(), e);
+            } catch (ProtocolViolationException e) {
+                log.error("SWORD server protocol violation", e);
+            }
         }
 
         System.exit(result);
     }
 
-    private static int doSwordDeposit(final Path filePath, final String mimeType, final String suggestedIdentifier, final boolean inProgress, final Path propertiesPath) {
+    private static SWORDCollection getTargetCollection() throws SWORDClientException, ProtocolViolationException {
         SWORDClient client = new SWORDClient();
+        AuthCredentials authCredentials = new AuthCredentials(ePerson, ePersonPassword);
+        ServiceDocument sd = client.getServiceDocument(dspaceSwordUrl, authCredentials);
+        SWORDWorkspace dspaceRepository = sd.getWorkspaces().get(0);
 
+        SWORDCollection targetCollection = requestTargetCollections(dspaceRepository);
+        if (targetCollection == null) {
+            throw new SWORDClientException("The target collection does not exist, we cannot continue");
+        } else {
+            log.info("The selected target collection is " + targetCollection.getTitle());
+        }
+        return targetCollection;
+    }
+
+    private static int doSwordDeposit(final Path filePath, final String mimeType, final String suggestedIdentifier, final boolean inProgress, final SWORDCollection targetCollection) throws IOException, ProtocolViolationException, SWORDError, SWORDClientException {
         try (InputStream fileStream = Files.newInputStream(filePath)) {
-            loadSwordv2ServerProperties(propertiesPath);
-
+            SWORDClient client = new SWORDClient();
             AuthCredentials authCredentials = new AuthCredentials(ePerson, ePersonPassword);
-            ServiceDocument sd = client.getServiceDocument(dspaceSwordUrl, authCredentials);
-
-            SWORDWorkspace dspaceRepository = sd.getWorkspaces().get(0);
-
-            SWORDCollection targetCollection = requestTargetCollections(dspaceRepository);
-            if(targetCollection == null) {
-                log.error("The target collection does not exist, we cannot continue");
-                return 1;
-            } else {
-                log.info("The selected target collection is " + targetCollection.getTitle());
-            }
 
             Deposit deposit = new Deposit();
             deposit.setFile(fileStream);
             deposit.setMimeType(mimeType);
             deposit.setFilename(filePath.getFileName().toString());
-            deposit.setPackaging(UriRegistry.PACKAGE_SIMPLE_ZIP);
+            deposit.setPackaging(UriRegistry.PACKAGE_DSPACE_SAF);
             deposit.setInProgress(inProgress);
             deposit.setSuggestedIdentifier(suggestedIdentifier);
 
@@ -83,14 +134,6 @@ public class Swordv2ClientScript {
 
             log.info(buildReceiptReport(receipt));
 
-        } catch (SWORDClientException e) {
-            log.error("Unable to connect to SWORD server", e);
-        } catch (IOException e) {
-            log.error("Unable to open archive file or swordv2-server.properties file", e);
-        } catch (SWORDError e) {
-            log.error("SWORD server was unable to process the request, received response code " + e.getStatus(), e);
-        } catch (ProtocolViolationException e) {
-            log.error("SWORD server protocol violation", e);
         }
 
         return 0;
@@ -144,8 +187,10 @@ public class Swordv2ClientScript {
 
     private static Options createCommandLineOptions() {
         Options options = new Options();
-        options.addOption(OptionBuilder.hasArg(true).withArgName("path").isRequired().withLongOpt("file")
+        options.addOption(OptionBuilder.hasArg(true).withArgName("path").withLongOpt("file")
                 .withDescription("Path to the archive file that needs to be uploaded").create(FILE_PATH_FLAG));
+        options.addOption(OptionBuilder.hasArg(true).withArgName("path").withLongOpt("directory")
+                .withDescription("Path to the directory containing all archive files that needs to be uploaded").create(DIRECTORY_PATH_FLAG));
         options.addOption(OptionBuilder.hasArg(true).withArgName("path").isRequired().withLongOpt("server-properties")
                 .withDescription("Path to the server properties file to authenticate").create(PROPERTIES_PATH_FLAG));
         options.addOption(OptionBuilder.hasArg(true).withArgName("type").isRequired().withLongOpt("mimetype")
