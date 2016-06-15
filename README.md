@@ -23,14 +23,15 @@ The script can be launched with the help of maven, for example:
 ```
 
 The possible command line parameters are:
-| Flag        | Description           | Usage  |
-| ------------- |:-------------:| -----:|
-| -i,--in-progress      | When used, the script will send a request with the In-Progress header set to true. | Optional |
-| -p,--server-properties <path>      | Path to the server properties file that contains the server URL and authentication credentials |   Required |
-| -d,--directory <path> | Path to the directory containing all archive ZIP files that needs to be uploaded  | -d or -f is required |
-| -f,--file <path> | Path to the archive file that needs to be uploaded | -d or -f is required |
-| -m,--mimetype <type> | The mimetype of the archive file, e.g. 'application/zip' | Required |
-| -s,--slug <id> | The suggested identifier to pass to the SWORD server | Optional |
+
+| Flag                          | Description                                                                                    | Usage                |
+|-------------------------------|------------------------------------------------------------------------------------------------|----------------------|
+| -i,--in-progress              | When used, the script will send a request with the In-Progress header set to true.             | Optional             |
+| -p,--server-properties <path> | Path to the server properties file that contains the server URL and authentication credentials | Required             |
+| -d,--directory <path>         | Path to the directory containing all archive ZIP files that needs to be uploaded               | -d or -f is required |
+| -f,--file <path>              | Path to the archive file that needs to be uploaded                                             | -d or -f is required |
+| -m,--mimetype <type>          | The mime type of the archive file, e.g. 'application/zip'                                      | Required             |
+| -s,--slug <id>                | The suggested identifier to pass to the SWORD server                                           | Optional             |
 
 If the upload was successful, the script will print out the deposit receipt(s). If it encountered an error, it will print out the error code and a description (if the server returned an error description).
 
