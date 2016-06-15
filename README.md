@@ -18,6 +18,7 @@ In the root directory will build the software
 Running the script
 ------------------
 The script can be launched with the help of maven, for example:
+
 ```
  $ mvn exec:java -Dexec.mainClass="com.atmire.lne.swordv2.client.Swordv2ClientScript" -Dexec.args="-d '/Users/tom/temp/DBA_2015000265-aparte-sip-paketten' -m 'application/zip' -p src/main/resources/swordv2-server.properties" > upload.log 2>&1
 ```
