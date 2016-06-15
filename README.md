@@ -15,9 +15,28 @@ To build this library use maven 2:
 
 In the root directory will build the software
 
+Running the script
+------------------
+The script can be launched with the help of maven, for example:
+```
+ $ mvn exec:java -Dexec.mainClass="com.atmire.lne.swordv2.client.Swordv2ClientScript" -Dexec.args="-d '/Users/tom/temp/DBA_2015000265-aparte-sip-paketten' -m 'application/zip' -p src/main/resources/swordv2-server.properties" > upload.log 2>&1
+```
 
-Usage
------
+The possible command line parameters are:
+| Flag        | Description           | Usage  |
+| ------------- |:-------------:| -----:|
+| -i,--in-progress      | When used, the script will send a request with the In-Progress header set to true. | Optional |
+| -p,--server-properties <path>      | Path to the server properties file that contains the server URL and authentication credentials |   Required |
+| -d,--directory <path> | Path to the directory containing all archive ZIP files that needs to be uploaded  | -d or -f is required |
+| -f,--file <path> | Path to the archive file that needs to be uploaded | -d or -f is required |
+| -m,--mimetype <type> | The mimetype of the archive file, e.g. 'application/zip' | Required |
+| -s,--slug <id> | The suggested identifier to pass to the SWORD server | Optional |
+
+If the upload was successful, the script will print out the deposit receipt(s). If it encountered an error, it will print out the error code and a description (if the server returned an error description).
+
+
+API Documentation
+-----------------
 
 The main point of entry for client operations is org.swordapp.client.SWORDClient
 
@@ -57,7 +76,7 @@ We can create entry-only depsits too:
 
     EntryPart ep = new EntryPart();
     ep.addDublinCore("title", "My Title");
-    
+
     Deposit deposit = new Deposit();
     deposit.setEntryPart(ep);
 
@@ -85,4 +104,3 @@ Limitations
 -----------
 
 Currently the client DOES NOT support multipart deposit.  Therefore the specification sections 6.3.2, 6.5.3, and 6.7.3 are not supported yet.
-
