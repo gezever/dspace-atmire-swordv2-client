@@ -45,8 +45,12 @@ public class SwordIdentifier
 
 	public SwordIdentifier(Link link)
 	{
-		this(link.getHref(), link.getMimeType(), link.getRel());
-		this.link = link;
+		if(link != null) {
+			this.href = link.getHref().toString();
+			this.type = mimeType != null ? mimeType.toString().replace(" ", "") : null;
+			this.rel = link.getRel();
+			this.link = link;
+		}
 	}
 
 	public String getHref() { return this.href; }
