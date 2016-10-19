@@ -2,6 +2,7 @@ package org.swordapp.client;
 
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.abdera.protocol.client.RequestOptions;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.text.ParseException;
@@ -110,6 +111,16 @@ public class HttpHeaders
                 log.debug("Adding HTTP Header to RequestOptions; On-Behalf-Of: " + username);
             }
             options.setHeader("On-Behalf-Of", username);
+        }
+    }
+
+    public void addOpenAmSSOID(final RequestOptions options, final String openAmSSOID) {
+        if (StringUtils.isNotEmpty(openAmSSOID)) {
+            if (log.isDebugEnabled())
+            {
+                log.debug("Adding HTTP Header to RequestOptions; OpenAmSSOID: " + openAmSSOID);
+            }
+            options.setHeader("OpenAmSSOID", openAmSSOID);
         }
     }
 

@@ -35,6 +35,7 @@ public class Swordv2ClientScript {
     private static String dspaceSwordUrl;
     private static String ePerson;
     private static String ePersonPassword;
+    private static String openAmSSOID;
 
     public static void main(String[] args) {
         int result = 1;
@@ -50,6 +51,8 @@ public class Swordv2ClientScript {
             String propertiesPath = cmd.getOptionValue(PROPERTIES_PATH_FLAG);
 
             try {
+                requestOpenAmSSOID();
+
                 loadSwordv2ServerProperties(Paths.get(propertiesPath));
 
                 SWORDCollection targetCollection = getTargetCollection();
@@ -102,10 +105,20 @@ public class Swordv2ClientScript {
         System.exit(result);
     }
 
+    private static void requestOpenAmSSOID() {
+        log.info("If you want to authenticate with an OpenAM SSO ID, you can enter it now. Otherwise, just press enter: ");
+        Scanner scanner = new Scanner(System.in);
+        String ssoId = scanner.next();
+        if(StringUtils.isNotEmpty(ssoId)) {
+            openAmSSOID = ssoId;
+        } else {
+            openAmSSOID = null;
+        }
+    }
+
     private static SWORDCollection getTargetCollection() throws SWORDClientException, ProtocolViolationException {
         SWORDClient client = new SWORDClient();
-        AuthCredentials authCredentials = new AuthCredentials(ePerson, ePersonPassword);
-        ServiceDocument sd = client.getServiceDocument(dspaceSwordUrl, authCredentials);
+        ServiceDocument sd = client.getServiceDocument(dspaceSwordUrl, getAuthCredentials());
         SWORDWorkspace dspaceRepository = sd.getWorkspaces().get(0);
 
         SWORDCollection targetCollection = requestTargetCollections(dspaceRepository);
@@ -117,10 +130,15 @@ public class Swordv2ClientScript {
         return targetCollection;
     }
 
+    private static AuthCredentials getAuthCredentials() {
+        AuthCredentials authCredentials = new AuthCredentials(ePerson, ePersonPassword);
+        authCredentials.setOpenAmSSOID(openAmSSOID);
+        return authCredentials;
+    }
+
     private static int doSwordDeposit(final Path filePath, final String mimeType, final String suggestedIdentifier, final boolean inProgress, final SWORDCollection targetCollection) throws IOException, ProtocolViolationException, SWORDError, SWORDClientException {
         try (InputStream fileStream = Files.newInputStream(filePath)) {
             SWORDClient client = new SWORDClient();
-            AuthCredentials authCredentials = new AuthCredentials(ePerson, ePersonPassword);
 
             Deposit deposit = new Deposit();
             deposit.setFile(fileStream);
@@ -130,7 +148,7 @@ public class Swordv2ClientScript {
             deposit.setInProgress(inProgress);
             deposit.setSuggestedIdentifier(suggestedIdentifier);
 
-            DepositReceipt receipt = client.deposit(targetCollection, deposit, authCredentials);
+            DepositReceipt receipt = client.deposit(targetCollection, deposit, getAuthCredentials());
 
             log.info(buildReceiptReport(receipt));
 

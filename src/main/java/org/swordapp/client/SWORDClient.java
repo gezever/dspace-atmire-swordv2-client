@@ -1539,6 +1539,15 @@ public class SWORDClient
                 }
                 http.addOnBehalfOf(options, auth.getOnBehalfOf());
             }
+
+            if (auth.getOpenAmSSOID() != null)
+            {
+                if (log.isDebugEnabled())
+                {
+                    log.debug("Setting OpenAmSSOID header: " + auth.getOpenAmSSOID());
+                }
+                http.addOpenAmSSOID(options, auth.getOpenAmSSOID());
+            }
         }
     }
 

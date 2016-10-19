@@ -39,6 +39,7 @@ public class AuthCredentials
     private String onBehalfOf;
     private String target = null;
     private String realm = null;
+    private String openAmSSOID = null;
 
     public AuthCredentials(String username, String password, String onBehalfOf, String target, String realm)
     {
@@ -98,5 +99,13 @@ public class AuthCredentials
     public String getRealm()
     {
         return realm;
+    }
+
+    public String getOpenAmSSOID() {
+        return openAmSSOID;
+    }
+
+    public void setOpenAmSSOID(final String openAmSsoId) {
+        this.openAmSSOID = openAmSsoId;
     }
 }
