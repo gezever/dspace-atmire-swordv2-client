@@ -31,6 +31,8 @@ public class Swordv2ClientScript {
     private static final String MIMETYPE_FLAG = "m";
     private static final String SLUG_FLAG = "s";
     private static final String IN_PROGRESS_FLAG = "i";
+    private static final String OPENAMSSOID_FLAG = "o";
+
 
     private static String dspaceSwordUrl;
     private static String ePerson;
@@ -49,9 +51,12 @@ public class Swordv2ClientScript {
             String suggestedIdentifier = cmd.getOptionValue(SLUG_FLAG);
             boolean inProgress = cmd.hasOption(IN_PROGRESS_FLAG);
             String propertiesPath = cmd.getOptionValue(PROPERTIES_PATH_FLAG);
+            boolean skipOpenAm = cmd.hasOption(OPENAMSSOID_FLAG);
 
             try {
-                requestOpenAmSSOID();
+                if (!skipOpenAm) {
+                    requestOpenAmSSOID();
+                }
 
                 loadSwordv2ServerProperties(Paths.get(propertiesPath));
 
@@ -215,10 +220,16 @@ public class Swordv2ClientScript {
                 .withDescription("The mimetype of the archive file").create(MIMETYPE_FLAG));
         options.addOption(OptionBuilder.hasArg(true).withArgName("id").withLongOpt("slug")
                 .withDescription("The suggested identifier to pass to the SWORD server").create(SLUG_FLAG));
-
         options.addOption(OptionBuilder.withLongOpt("in-progress")
                 .withDescription("When used, the script will send a request with the In-Progress header set to true.")
                 .create(IN_PROGRESS_FLAG));
+
+        options.addOption(OptionBuilder.hasArg(false).
+            withLongOpt("no-openam")
+            .withDescription("When used, no OpenAM SSO ID will be asked")
+            .create(OPENAMSSOID_FLAG));
+
+
 
         return options;
     }

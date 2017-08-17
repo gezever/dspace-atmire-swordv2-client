@@ -20,7 +20,7 @@ Running the script
 The script can be launched with the help of maven, for example:
 
 ```
- $ mvn exec:java -Dexec.mainClass="com.atmire.lne.swordv2.client.Swordv2ClientScript" -Dexec.args="-d '/Users/tom/temp/DBA_2015000265-aparte-sip-paketten' -m 'application/zip' -p src/main/resources/swordv2-server.properties"
+ $ mvn exec:java -Dexec.mainClass="com.atmire.lne.swordv2.client.Swordv2ClientScript" -Dexec.args="-d '/Users/tom/temp/DBA_2015000265-aparte-sip-paketten' -m 'application/zip' -p src/main/resources/swordv2-server.properties -o"
 ```
 
 The possible command line parameters are:
@@ -33,7 +33,7 @@ The possible command line parameters are:
 | -f,--file <path>              | Path to the archive file that needs to be uploaded                                             | -d or -f is required |
 | -m,--mimetype <type>          | The mime type of the archive file, e.g. 'application/zip'                                      | Required             |
 | -s,--slug <id>                | The suggested identifier to pass to the SWORD server                                           | Optional             |
-
+| -o,--no-openam                | Bypass OpenAM security                                                                         | Optional             |
 If the upload was successful, the script will print out the deposit receipt(s). If it encountered an error, it will print out the error code and a description (if the server returned an error description).
 
 
