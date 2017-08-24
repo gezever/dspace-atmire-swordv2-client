@@ -157,6 +157,8 @@ public class Swordv2ClientScript {
 
             log.info(buildReceiptReport(receipt));
 
+
+            log.info("File :["+filePath+"] StatusCode :["+receipt+"]");
         }
 
         return 0;
